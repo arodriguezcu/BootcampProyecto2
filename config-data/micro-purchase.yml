@@ -1,0 +1,63 @@
+server:
+    port: 8092
+  
+spring:
+  application:
+    name: micro-purchase
+  data:
+    mongodb:
+      database: db_purchase
+        uri: mongodb://${server.hostname}:12500/${spring.data.mongodb.database}
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://${eureka.instance.hostname}:80/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    prefer-ip-address: true
+    hostname: az-eureka-server.azurewebsites.net
+            
+msg:
+  error:
+    registro:
+      notfound.all: PURCHASES NO ENCONTRADOS
+      product.all: PRODUCTOS NO ENCONTRADOS
+      customer.all: CLIENTE NO ENCONTRADO
+      notfound: PURCHASE NO IDENTIFICADO      
+      notfound.create: PURCHASE NO SE PUDO CREAR
+      product.exists: PRODUCTO NO EXISTE
+      card.exists: NUMERO DE TARJETA YA EXISTE
+      positive: MONTO DEBE SER POSITIVO
+      customer.exists: CLIENTES NO EXISTEN
+      owners: TITULARES DEBEN SER EL MISMO TIPO DE CLIENTE (PERSONAL O EMPRESARIAL)
+      business.owner: CLIENTE EMPRESARIAL MAXIMO 1 TITULAR
+      minimum.owner: MINIMO 1 TITULAR
+      product.available: CLIENTE YA CUENTA CON EL PRODUCTO
+      credit.card: NECESITA UNA TARJETA DE CREDITO
+      product.business: CLIENTE EMPRESARIAL NO PUEDE OBTENER EL PRODUCTO      
+      notfound.update: PURCHASE NO IDENTIFICADO PARA ACTUALIZAR
+      notfound.delete: PURCHASE NO IDENTIFICADO PARA ELIMINAR
+      purchase.delete: PURCHASE ELIMINADO
+            
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        waitDurationInOpenState: 2s
+        failureRateThreshold: 50
+        eventConsumerBufferSize: 10
+        recordExceptions:
+          - org.springframework.web.client.HttpServerErrorException
+          - java.util.concurrent.TimeoutException
+          - java.io.IOException
+          - java.net.ConnectException
+    instances:
+      purchaseServiceCircuitBreaker:
+        baseConfig: default

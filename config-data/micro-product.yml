@@ -1,0 +1,52 @@
+server:
+    port: 8091
+  
+spring:
+  application:
+    name: micro-product
+  data:
+    mongodb:
+      database: db_product
+        uri: mongodb://${server.hostname}:12500/${spring.data.mongodb.database}
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://${eureka.instance.hostname}:80/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    prefer-ip-address: true
+    hostname: az-eureka-server.azurewebsites.net
+            
+msg:
+  error:
+    registro:
+      notfound.all: PRODUCTOS NO ENCONTRADOS
+      notfound: PRODUCTO NO IDENTIFICADO
+      notfound.create: PRODUCTO NO SE PUDO CREAR
+      if.exists: PRODUCTO YA EXISTE
+      notfound.update: PRODUCTO NO IDENTIFICADO PARA ACTUALIZAR
+      notfound.delete: CLIENTE NO IDENTIFICADO PARA ELIMINAR
+      product.delete: CLIENTE ELIMINADO
+
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        waitDurationInOpenState: 2s
+        failureRateThreshold: 50
+        eventConsumerBufferSize: 10
+        recordExceptions:
+          - org.springframework.web.client.HttpServerErrorException
+          - java.util.concurrent.TimeoutException
+          - java.io.IOException
+          - java.net.ConnectException
+    instances:
+      productServiceCircuitBreaker:
+        baseConfig: default

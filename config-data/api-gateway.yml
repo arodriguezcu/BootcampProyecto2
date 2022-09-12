@@ -1,0 +1,44 @@
+server:
+  port: 8080
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://${eureka.instance.hostname}:80/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    prefer-ip-address: true
+    hostname: az-eureka-server.azurewebsites.net
+      
+#routers
+zuul:
+  routes:
+    customer:
+      path: /api/micro-client/**
+      service-id: micro-client
+      url: http://${server.hostname}:8090/
+    product:
+      path: /api/micro-product/**
+      service-id: micro-product
+      url: http://${server.hostname}:8091/
+    purchase:
+      path: /api/micro-purchase/**
+      service-id: micro-purchase
+      url: http://${server.hostname}:8092/
+    transaction:
+      path: /api/micro-transaction/**
+      service-id: micro-transaction
+      url: http://${server.hostname}:8093/
+    account:
+      path: /api/micro-account/**
+      service-id: micro-account
+      url: http://${server.hostname}:8094/
+    withdrawal:
+      path: /api/micro-withdrawal/**
+      service-id: micro-withdrawal
+      url: http://${server.hostname}:8095/
+    deposit:
+      path: /api/micro-deposit/**
+      service-id: micro-deposit
+      url: http://${server.hostname}:8096/

@@ -1,0 +1,50 @@
+server:
+    port: 8096
+    
+spring:
+  application:
+    name: micro-deposit
+  data:
+    mongodb:
+      database: db_deposit
+        uri: mongodb://${server.hostname}:12500/${spring.data.mongodb.database}
+      
+eureka:
+  client:
+    service-url:
+      defaultZone: http://${eureka.instance.hostname}:80/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    prefer-ip-address: true
+    hostname: az-eureka-server.azurewebsites.net
+      
+msg:
+  error:
+    registro:
+      notfound.all: DEPOSITOS NO IDENTIFICADOS
+      notfound.create: DEPOSITO NO SE PUDO CREAR
+      positive: MONTO DEBE SER POSITIVO
+      account.exists: NUMERO DE CUENTA NO EXISTE
+      card.exists: NUMERO DE TARJETA NO EXISTE
+
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        waitDurationInOpenState: 2s
+        failureRateThreshold: 50
+        eventConsumerBufferSize: 10
+        recordExceptions:
+          - org.springframework.web.client.HttpServerErrorException
+          - java.util.concurrent.TimeoutException
+          - java.io.IOException
+          - java.net.ConnectException
+    instances:
+      depositServiceCircuitBreaker:
+        baseConfig: default

@@ -1,0 +1,44 @@
+server:
+  port: 8090
+#  port: 80
+#  hostname: localhost
+#  hostname: 192.168.0.106
+    
+spring:
+  application:
+    name: micro-client
+  data:
+    mongodb:
+      database: db_client
+        uri: mongodb://${server.hostname}:12500/${spring.data.mongodb.database}
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://${eureka.instance.hostname}:80/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    prefer-ip-address: true
+    hostname: az-eureka-server.azurewebsites.net
+
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        waitDurationInOpenState: 2s
+        failureRateThreshold: 50
+        eventConsumerBufferSize: 10
+        recordExceptions:
+          - org.springframework.web.client.HttpServerErrorException
+          - java.util.concurrent.TimeoutException
+          - java.io.IOException
+          - java.net.ConnectException
+    instances:
+      customerServiceCircuitBreaker:
+        baseConfig: default

@@ -14,7 +14,6 @@ import java.util.ArrayList;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -28,24 +27,6 @@ public class WithdrawalServiceImpl extends CrudServiceImpl<Withdrawal, String>
     implements InterfaceWithdrawalService {
 
   static final String CIRCUIT = "withdrawalServiceCircuitBreaker";
-  
-  @Value("${msg.error.registro.notfound.all}")
-  private String msgNotFoundAll;
-  
-  @Value("${msg.error.registro.positive}")
-  private String msgPositive;
-  
-  @Value("${msg.error.registro.exceed}")
-  private String msgExceed;
-  
-  @Value("${msg.error.registro.account.exists}")
-  private String msgAccountNotExists;
-  
-  @Value("${msg.error.registro.card.exists}")
-  private String msgCardNotExists;
-  
-  @Value("${msg.error.registro.notfound.create}")
-  private String msgNotFoundCreate;
   
   @Autowired
   private InterfaceWithdrawalRepository repository;
@@ -72,7 +53,7 @@ public class WithdrawalServiceImpl extends CrudServiceImpl<Withdrawal, String>
   public Mono<List<Withdrawal>> findAllWithdrawal() {
     
     Flux<Withdrawal> withdrawalDatabase = service.findAll()
-        .switchIfEmpty(Mono.error(new RuntimeException(msgNotFoundAll)));
+        .switchIfEmpty(Mono.error(new RuntimeException("RETIROS NO IDENTIFICADOS")));
     
     return withdrawalDatabase.collectList().flatMap(Mono::just);
   
@@ -84,18 +65,18 @@ public class WithdrawalServiceImpl extends CrudServiceImpl<Withdrawal, String>
     
     Mono<Purchase> purchaseDatabase = purchaseService
         .findByCardNumber(withdrawal.getPurchase().getCardNumber())
-        .switchIfEmpty(Mono.error(new RuntimeException(msgCardNotExists)));
+        .switchIfEmpty(Mono.error(new RuntimeException("NUMERO DE TARJETA NO EXISTE")));
     
     Mono<Account> accountDatabase = accountService
         .findByAccountNumber(withdrawal.getAccount().getAccountNumber())
-        .switchIfEmpty(Mono.error(new RuntimeException(msgAccountNotExists)));
+        .switchIfEmpty(Mono.error(new RuntimeException("NUMERO DE CUENTA NO EXISTE")));
     
     return purchaseDatabase
         .flatMap(purchase -> {
           
           if (withdrawal.getAmount() < 0) {
             
-            return Mono.error(new RuntimeException(msgPositive));
+            return Mono.error(new RuntimeException("MONTO DEBE SER POSITIVO"));
             
           }
         
@@ -104,7 +85,7 @@ public class WithdrawalServiceImpl extends CrudServiceImpl<Withdrawal, String>
                 
                 if (withdrawal.getAmount() > account.getCurrentBalance()) {
                   
-                  return Mono.error(new RuntimeException(msgExceed));
+                  return Mono.error(new RuntimeException("MONTO EXCEDE EL SALDO DISPONIBLE"));
                   
                 }
                 
@@ -124,7 +105,7 @@ public class WithdrawalServiceImpl extends CrudServiceImpl<Withdrawal, String>
               
                 return service.create(withdrawal)
                     .map(createdObject -> createdObject)
-                    .switchIfEmpty(Mono.error(new RuntimeException(msgNotFoundCreate)));
+                    .switchIfEmpty(Mono.error(new RuntimeException("RETIRO NO SE PUDO CREAR")));
                           
               });
                   

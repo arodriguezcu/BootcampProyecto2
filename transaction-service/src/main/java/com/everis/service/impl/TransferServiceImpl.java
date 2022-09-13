@@ -11,7 +11,6 @@ import com.everis.service.InterfaceTransferService;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
@@ -25,18 +24,6 @@ public class TransferServiceImpl extends CrudServiceImpl<Transfer, String>
 
   static final String CIRCUIT = "transferServiceCircuitBreaker";
 
-  @Value("${msg.error.registro.accountini.exists}")
-  private String msgAccountIniNotExists;
-
-  @Value("${msg.error.registro.accountfin.exists}")
-  private String msgAccountFinNotExists;
-  
-  @Value("${msg.error.registro.positive}")
-  private String msgPositive;
-  
-  @Value("${msg.error.registro.exceed}")
-  private String msgExceed;
-  
   @Autowired
   private InterfaceTransferRepository repository;
 
@@ -56,11 +43,11 @@ public class TransferServiceImpl extends CrudServiceImpl<Transfer, String>
     
     Mono<Account> sendAccount = accountService
         .findByAccountNumber(transfer.getSendAccount().getAccountNumber())
-        .switchIfEmpty(Mono.error(new RuntimeException(msgAccountIniNotExists)));
+        .switchIfEmpty(Mono.error(new RuntimeException("NUMERO DE CUENTA INICIAL NO EXISTE")));
 
     Mono<Account> receiveAccount = accountService
         .findByAccountNumber(transfer.getReceiveAccount().getAccountNumber())
-        .switchIfEmpty(Mono.error(new RuntimeException(msgAccountFinNotExists)));
+        .switchIfEmpty(Mono.error(new RuntimeException("NUMERO DE CUENTA FINAL NO EXISTE")));
     
     Withdrawal withdrawal = Withdrawal.builder().build();
     
@@ -71,7 +58,7 @@ public class TransferServiceImpl extends CrudServiceImpl<Transfer, String>
           
           if (transfer.getAmount() < 0) {
             
-            return Mono.error(new RuntimeException(msgPositive));
+            return Mono.error(new RuntimeException("MONTO DEBE SER POSITIVO"));
             
           }
           
@@ -92,7 +79,7 @@ public class TransferServiceImpl extends CrudServiceImpl<Transfer, String>
                 
                 if (withdrawal.getAccount().getCurrentBalance() < 0) {
                   
-                  return Mono.error(new RuntimeException(msgExceed));
+                  return Mono.error(new RuntimeException("MONTO EXCEDE EL SALDO DISPONIBLE"));
                   
                 }
                 

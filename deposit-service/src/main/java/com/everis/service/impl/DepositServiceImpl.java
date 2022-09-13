@@ -14,7 +14,6 @@ import java.util.ArrayList;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -28,21 +27,6 @@ public class DepositServiceImpl extends CrudServiceImpl<Deposit, String>
     implements InterfaceDepositService {
 
   static final String CIRCUIT = "depositServiceCircuitBreaker";
-
-  @Value("${msg.error.registro.notfound.all}")
-  private String msgNotFoundAll;
-  
-  @Value("${msg.error.registro.positive}")
-  private String msgPositive;
-  
-  @Value("${msg.error.registro.account.exists}")
-  private String msgAccountNotExists;
-  
-  @Value("${msg.error.registro.card.exists}")
-  private String msgCardNotExists;
-  
-  @Value("${msg.error.registro.notfound.create}")
-  private String msgNotFoundCreate;
   
   @Autowired
   private InterfaceDepositRepository repository;
@@ -68,7 +52,7 @@ public class DepositServiceImpl extends CrudServiceImpl<Deposit, String>
   public Mono<List<Deposit>> findAllDeposit() {
     
     Flux<Deposit> depositDatabase = service.findAll()
-        .switchIfEmpty(Mono.error(new RuntimeException(msgNotFoundAll)));
+        .switchIfEmpty(Mono.error(new RuntimeException("DEPOSITOS NO IDENTIFICADOS")));
     
     return depositDatabase.collectList().flatMap(Mono::just);
   
@@ -80,11 +64,11 @@ public class DepositServiceImpl extends CrudServiceImpl<Deposit, String>
     
     Mono<Purchase> purchaseDatabase = purchaseService
         .findByCardNumber(deposit.getPurchase().getCardNumber())
-        .switchIfEmpty(Mono.error(new RuntimeException(msgCardNotExists)));
+        .switchIfEmpty(Mono.error(new RuntimeException("NUMERO DE TARJETA NO EXISTE")));
     
     Mono<Account> accountDatabase = accountService
         .findByAccountNumber(deposit.getAccount().getAccountNumber())
-        .switchIfEmpty(Mono.error(new RuntimeException(msgAccountNotExists)));
+        .switchIfEmpty(Mono.error(new RuntimeException("NUMERO DE CUENTA NO EXISTE")));
     
     return purchaseDatabase
         .flatMap(purchase -> accountDatabase
@@ -92,7 +76,7 @@ public class DepositServiceImpl extends CrudServiceImpl<Deposit, String>
                           
               if (deposit.getAmount() < 0) {
                 
-                return Mono.error(new RuntimeException(msgPositive));
+                return Mono.error(new RuntimeException("MONTO DEBE SER POSITIVO"));
             
               }
             
@@ -111,7 +95,7 @@ public class DepositServiceImpl extends CrudServiceImpl<Deposit, String>
         
               return service.create(deposit)
                 .map(createdObject -> createdObject)
-                .switchIfEmpty(Mono.error(new RuntimeException(msgNotFoundCreate)));
+                .switchIfEmpty(Mono.error(new RuntimeException("DEPOSITO NO SE PUDO CREAR")));
                              
             }));
     

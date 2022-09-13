@@ -13,15 +13,6 @@ eureka:
   client:
     serviceUrl:
       defaultZone: http://localhost:8099/eureka/
-      
-msg:
-  error:
-    registro:
-      notfound.all: DEPOSITOS NO IDENTIFICADOS
-      notfound.create: DEPOSITO NO SE PUDO CREAR
-      positive: MONTO DEBE SER POSITIVO
-      account.exists: NUMERO DE CUENTA NO EXISTE
-      card.exists: NUMERO DE TARJETA NO EXISTE
 
 resilience4j:
   circuitbreaker:

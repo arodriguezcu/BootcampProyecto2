@@ -13,7 +13,6 @@ import java.util.ArrayList;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -27,30 +26,6 @@ public class AccountServiceImpl extends CrudServiceImpl<Account, String>
     implements InterfaceAccountService {
 
   static final String CIRCUIT = "accountServiceCircuitBreaker";
-
-  @Value("${msg.error.registro.notfound.all}")
-  private String msgNotFoundAll;
-
-  @Value("${msg.error.registro.notfound}")
-  private String msgNotFound;
-
-  @Value("${msg.error.registro.if.exists}")
-  private String msgIfExists;
-
-  @Value("${msg.error.registro.card.notexists}")
-  private String msgCardNotExists;
-
-  @Value("${msg.error.registro.notfound.create}")
-  private String msgNotFoundCreate;
-
-  @Value("${msg.error.registro.notfound.update}")
-  private String msgNotFoundUpdate;
-
-  @Value("${msg.error.registro.notfound.delete}")
-  private String msgNotFoundDelete;
-
-  @Value("${msg.error.registro.account.delete}")
-  private String msgAccountDelete;
 
   @Autowired
   private InterfaceAccountRepository repository;
@@ -73,7 +48,7 @@ public class AccountServiceImpl extends CrudServiceImpl<Account, String>
   public Mono<List<Account>> findAllAccount() {
 
     Flux<Account> accountDatabase = service.findAll()
-        .switchIfEmpty(Mono.error(new RuntimeException(msgNotFoundAll)));
+        .switchIfEmpty(Mono.error(new RuntimeException("CUENTAS NO IDENTIFICADAS")));
 
     return accountDatabase.collectList().flatMap(Mono::just);
 
@@ -84,7 +59,7 @@ public class AccountServiceImpl extends CrudServiceImpl<Account, String>
   public Mono<Account> findByAccountNumber(String accountNumber) {
 
     return repository.findByAccountNumber(accountNumber)
-        .switchIfEmpty(Mono.error(new RuntimeException(msgNotFound)));
+        .switchIfEmpty(Mono.error(new RuntimeException("CUENTA NO IDENTIFICADA")));
 
   }
 
@@ -94,7 +69,7 @@ public class AccountServiceImpl extends CrudServiceImpl<Account, String>
 
     Mono<Purchase> purchaseDatabase = purchaseService
         .findByCardNumber(account.getPurchase().getCardNumber())
-        .switchIfEmpty(Mono.error(new RuntimeException(msgCardNotExists)));
+        .switchIfEmpty(Mono.error(new RuntimeException("NUMERO DE TARJETA NO EXISTE")));
 
     Flux<Account> accountDatabaseCard = service.findAll()
         .filter(list -> list.getPurchase().getCardNumber()
@@ -115,7 +90,7 @@ public class AccountServiceImpl extends CrudServiceImpl<Account, String>
               .collectList()
               .flatMap(list -> list.size() > 0
                   ?
-                      Mono.error(new RuntimeException(msgIfExists))
+                      Mono.error(new RuntimeException("CUENTA YA EXISTENTE"))
                   :
                       service.create(account)
               );
@@ -153,10 +128,10 @@ public class AccountServiceImpl extends CrudServiceImpl<Account, String>
         .flatMap(objectDelete -> {
 
           return service.delete(objectDelete.getId())
-              .then(Mono.just(Response.builder().data(msgAccountDelete).build()));
+              .then(Mono.just(Response.builder().data("CUENTA ELIMINADA").build()));
 
         })
-        .switchIfEmpty(Mono.error(new RuntimeException(msgNotFoundDelete)));
+        .switchIfEmpty(Mono.error(new RuntimeException("CUENTA NO IDENTIFICADA PARA ELIMINAR")));
 
   }
 

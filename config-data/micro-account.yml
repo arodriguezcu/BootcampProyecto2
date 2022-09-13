@@ -15,18 +15,6 @@ eureka:
     serviceUrl:
       defaultZone: http://localhost:8099/eureka/
             
-msg:
-  error:
-    registro:
-      notfound.all: CUENTAS NO IDENTIFICADAS
-      notfound: CUENTA NO IDENTIFICADA
-      notfound.create: CUENTA NO SE PUDO CREAR
-      if.exists: CUENTA YA EXISTE
-      card.notexists: NUMERO DE TARJETA NO EXISTE
-      notfound.update: CUENTA NO IDENTIFICADA PARA ACTUALIZAR
-      notfound.delete: CUENTA NO IDENTIFICADA PARA ELIMINAR
-      account.delete: CUENTA ELIMINADA
-
 resilience4j:
   circuitbreaker:
     configs:

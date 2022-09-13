@@ -15,7 +15,6 @@ import java.util.ArrayList;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -29,60 +28,6 @@ public class PurchseServiceImpl extends CrudServiceImpl<Purchase, String>
     implements InterfacePurchaseService {
 
   static final String CIRCUIT = "purchaseServiceCircuitBreaker";
-
-  @Value("${msg.error.registro.notfound.all}")
-  private String msgNotFoundAll;
-
-  @Value("${msg.error.registro.product.all}")
-  private String msgProductAll;
-
-  @Value("${msg.error.registro.customer.all}")
-  private String msgCustomerAll;
-
-  @Value("${msg.error.registro.notfound}")
-  private String msgNotFound;
-
-  @Value("${msg.error.registro.product.exists}")
-  private String msgProductNotExists;
-
-  @Value("${msg.error.registro.card.exists}")
-  private String msgCardExists;
-
-  @Value("${msg.error.registro.positive}")
-  private String msgPositive;
-
-  @Value("${msg.error.registro.customer.exists}")
-  private String msgCustomerNotExists;
-
-  @Value("${msg.error.registro.owners}")
-  private String msgOwners;
-
-  @Value("${msg.error.registro.business.owner}")
-  private String msgBusinessOwner;
-
-  @Value("${msg.error.registro.minimum.owner}")
-  private String msgMinimumOwner;
-
-  @Value("${msg.error.registro.product.available}")
-  private String msgProductNotAvailable;
-
-  @Value("${msg.error.registro.credit.card}")
-  private String msgCreditCard;
-
-  @Value("${msg.error.registro.product.business}")
-  private String msgProductNotBusiness;
-
-  @Value("${msg.error.registro.notfound.create}")
-  private String msgNotFoundCreate;  
-
-  @Value("${msg.error.registro.notfound.update}")
-  private String msgNotFoundUpdate;
-
-  @Value("${msg.error.registro.notfound.delete}")
-  private String msgNotFoundDelete;
-
-  @Value("${msg.error.registro.purchase.delete}")
-  private String msgPurchaseDelete;
 
   @Autowired
   private InterfacePurchaseRepository repository;
@@ -112,7 +57,7 @@ public class PurchseServiceImpl extends CrudServiceImpl<Purchase, String>
   public Mono<List<Purchase>> findAllPurchase() {
 
     Flux<Purchase> purchaseDatabase = service.findAll()
-        .switchIfEmpty(Mono.error(new RuntimeException(msgNotFoundAll)));
+        .switchIfEmpty(Mono.error(new RuntimeException("PURCHASES NO ENCONTRADOS")));
 
     return purchaseDatabase.collectList().flatMap(Mono::just);
 
@@ -124,7 +69,7 @@ public class PurchseServiceImpl extends CrudServiceImpl<Purchase, String>
 
     Flux<Purchase> purchaseDatabase = service.findAll()
         .filter(p -> p.getCustomerOwner().get(0).getIdentityNumber().equals(identityNumber))
-        .switchIfEmpty(Mono.error(new RuntimeException(msgNotFoundAll)));
+        .switchIfEmpty(Mono.error(new RuntimeException("PURCHASES NO ENCONTRADOS")));
 
     return purchaseDatabase.collectList().flatMap(Mono::just);
 
@@ -138,7 +83,7 @@ public class PurchseServiceImpl extends CrudServiceImpl<Purchase, String>
         .filter(p -> p.getCustomerOwner().get(0).getIdentityNumber().equals(identityNumber));
 
     Mono<Customer> customerDatabase = customerService.findByIdentityNumber(identityNumber)
-        .switchIfEmpty(Mono.error(new RuntimeException(msgCustomerAll)));
+        .switchIfEmpty(Mono.error(new RuntimeException("CLIENTE NO ENCONTRADO")));
 
     return purchaseDatabase
         .collectList()
@@ -146,7 +91,7 @@ public class PurchseServiceImpl extends CrudServiceImpl<Purchase, String>
             .flatMap(c -> {
 
               Flux<Product> productDatabase = productService.findAll()
-                  .switchIfEmpty(Mono.error(new RuntimeException(msgProductAll)));
+                  .switchIfEmpty(Mono.error(new RuntimeException("PRODUCTOS NO ENCONTRADOS")));
 
               if (c.getCustomerType().equalsIgnoreCase(PERSONAL)) {
 
@@ -185,7 +130,7 @@ public class PurchseServiceImpl extends CrudServiceImpl<Purchase, String>
   public Mono<Purchase> findByCardNumber(String cardNumber) {
 
     return repository.findByCardNumber(cardNumber)
-        .switchIfEmpty(Mono.error(new RuntimeException(msgCardExists)));
+        .switchIfEmpty(Mono.error(new RuntimeException("NUMERO DE TARJETA YA EXISTE")));
 
   }
 
@@ -197,7 +142,7 @@ public class PurchseServiceImpl extends CrudServiceImpl<Purchase, String>
 
     Mono<Product> productDatabase = productService
         .findByProductName(purchase.getProduct().getProductName())
-        .switchIfEmpty(Mono.error(new RuntimeException(msgProductNotExists)));
+        .switchIfEmpty(Mono.error(new RuntimeException("PRODUCTO NO EXISTE")));
 
     Flux<Purchase> purchaseDatabase = service.findAll()
         .filter(p -> p.getCardNumber().equals(purchase.getCardNumber()));
@@ -217,7 +162,7 @@ public class PurchseServiceImpl extends CrudServiceImpl<Purchase, String>
 
           if (listPurchase.size() > 0) {
 
-            return Mono.error(new RuntimeException(msgCardExists));
+            return Mono.error(new RuntimeException("NUMERO DE TARJETA YA EXISTE"));
 
           }
 
@@ -264,14 +209,14 @@ public class PurchseServiceImpl extends CrudServiceImpl<Purchase, String>
 
                 if (purchasebd.getAmountIni() < 0) {
 
-                  return Mono.error(new RuntimeException(msgPositive));
+                  return Mono.error(new RuntimeException("MONTO DEBE SER POSITIVO"));
 
                 }
 
                 if (purchasebd.getCustomerOwner().size()
                     != purchase.getCustomerOwner().size()) {
 
-                  return Mono.error(new RuntimeException(msgCustomerNotExists));
+                  return Mono.error(new RuntimeException("CLIENTES NO EXISTEN"));
 
                 }
 
@@ -290,19 +235,19 @@ public class PurchseServiceImpl extends CrudServiceImpl<Purchase, String>
 
                   if (quantityBusinessOwners >= 1 && quantityPersonalOwners >= 1) {
 
-                    return Mono.error(new RuntimeException(msgOwners));
+                    return Mono.error(new RuntimeException("TITULARES DEBEN SER EL MISMO TIPO DE CLIENTE (PERSONAL O EMPRESARIAL)"));
 
                   }
 
                   if (isEmpresarial) {
 
-                    return Mono.error(new RuntimeException(msgBusinessOwner));
+                    return Mono.error(new RuntimeException("CLIENTE EMPRESARIAL MAXIMO 1 TITULAR"));
 
                   }
 
                 } else if (quantityOwners == 0) {
 
-                  return Mono.error(new RuntimeException(msgMinimumOwner));
+                  return Mono.error(new RuntimeException("MINIMO 1 TITULAR"));
 
                 } else if (quantityOwners == 1) {
 
@@ -344,7 +289,7 @@ public class PurchseServiceImpl extends CrudServiceImpl<Purchase, String>
 
                         if (i > 0) {
 
-                          return Mono.error(new RuntimeException(msgProductNotAvailable
+                          return Mono.error(new RuntimeException("CLIENTE YA CUENTA CON EL PRODUCTO"
                               + " " + purchasebd.getProduct().getProductType()
                               + "-" + purchasebd.getProduct().getProductName()));
 
@@ -356,7 +301,7 @@ public class PurchseServiceImpl extends CrudServiceImpl<Purchase, String>
                               if (list.size() == 0 && purchase.getProduct().getProductName()
                                   .equals("AHORRO VIP")) {
 
-                                return Mono.error(new RuntimeException(msgCreditCard));
+                                return Mono.error(new RuntimeException("NECESITA UNA TARJETA DE CREDITO"));
 
                               }
 
@@ -367,7 +312,7 @@ public class PurchseServiceImpl extends CrudServiceImpl<Purchase, String>
                                     return createdObject;
 
                                   })
-                                  .switchIfEmpty(Mono.error(new RuntimeException(msgNotFoundCreate)));
+                                  .switchIfEmpty(Mono.error(new RuntimeException("PURCHASE NO SE PUDO CREAR")));
 
                             });
 
@@ -378,7 +323,7 @@ public class PurchseServiceImpl extends CrudServiceImpl<Purchase, String>
                       .getCondition().getCustomerTypeTarget().stream()
                       .filter(o -> o.equals(EMPRESARIAL)).findFirst().isPresent())) {
 
-                  return Mono.error(new RuntimeException(msgProductNotBusiness
+                  return Mono.error(new RuntimeException("CLIENTE EMPRESARIAL NO PUEDE OBTENER EL PRODUCTO"
                       + " " + purchasebd.getProduct().getProductType()
                       + "-" + purchasebd.getProduct().getProductName()));
 
@@ -391,7 +336,7 @@ public class PurchseServiceImpl extends CrudServiceImpl<Purchase, String>
                       if (list.size() == 0 && purchase.getProduct().getProductName()
                           .equals("CUENTA CORRIENTE PYME")) {
 
-                        return Mono.error(new RuntimeException(msgCreditCard));
+                        return Mono.error(new RuntimeException("NECESITA UNA TARJETA DE CREDITO"));
 
                       }
 
@@ -402,7 +347,7 @@ public class PurchseServiceImpl extends CrudServiceImpl<Purchase, String>
                             return createdObject;
 
                           })
-                          .switchIfEmpty(Mono.error(new RuntimeException(msgNotFoundCreate)));
+                          .switchIfEmpty(Mono.error(new RuntimeException("PURCHASE NO SE PUDO CREAR")));
 
                     });
 
@@ -436,7 +381,7 @@ public class PurchseServiceImpl extends CrudServiceImpl<Purchase, String>
           return objectUpdated;
 
         })
-        .switchIfEmpty(Mono.error(new RuntimeException(msgNotFoundUpdate)));
+        .switchIfEmpty(Mono.error(new RuntimeException("PURCHASE NO IDENTIFICADO PARA ACTUALIZAR")));
 
   }
 
@@ -448,8 +393,8 @@ public class PurchseServiceImpl extends CrudServiceImpl<Purchase, String>
 
     return purchaseDatabase
         .flatMap(objectDelete -> service.delete(objectDelete.getId())
-            .then(Mono.just(Response.builder().data(msgPurchaseDelete).build())))
-        .switchIfEmpty(Mono.error(new RuntimeException(msgNotFoundDelete)));
+            .then(Mono.just(Response.builder().data("PURCHASE ELIMINADO").build())))
+        .switchIfEmpty(Mono.error(new RuntimeException("PURCHASE NO IDENTIFICADO PARA ELIMINAR")));
 
   }
 

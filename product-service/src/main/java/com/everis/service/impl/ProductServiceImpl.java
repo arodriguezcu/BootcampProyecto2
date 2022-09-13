@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -24,27 +23,6 @@ public class ProductServiceImpl extends CrudServiceImpl<Product, String>
     implements InterfaceProductService {
 
   static final String CIRCUIT = "productServiceCircuitBreaker";
-
-  @Value("${msg.error.registro.notfound.all}")
-  private String msgNotFoundAll;
-
-  @Value("${msg.error.registro.notfound}")
-  private String msgNotFound;
-
-  @Value("${msg.error.registro.if.exists}")
-  private String msgIfExists;
-
-  @Value("${msg.error.registro.notfound.create}")
-  private String msgNotFoundCreate;
-
-  @Value("${msg.error.registro.notfound.update}")
-  private String msgNotFoundUpdate;
-
-  @Value("${msg.error.registro.notfound.delete}")
-  private String msgNotFoundDelete;
-
-  @Value("${msg.error.registro.product.delete}")
-  private String msgProductDelete;
 
   @Autowired
   private InterfaceProductRepository repository;
@@ -64,7 +42,7 @@ public class ProductServiceImpl extends CrudServiceImpl<Product, String>
   public Mono<List<Product>> findAllProduct() {
 
     Flux<Product> productDatabase = service.findAll()
-        .switchIfEmpty(Mono.error(new RuntimeException(msgNotFoundAll)));
+        .switchIfEmpty(Mono.error(new RuntimeException("PRODUCTOS NO ENCONTRADOS")));
 
     return productDatabase.collectList().flatMap(Mono::just);
 
@@ -75,7 +53,7 @@ public class ProductServiceImpl extends CrudServiceImpl<Product, String>
   public Mono<Product> findByProductName(String productName) {
 
     return repository.findByProductName(productName)
-        .switchIfEmpty(Mono.error(new RuntimeException(msgNotFound)));
+        .switchIfEmpty(Mono.error(new RuntimeException("PRODUCTO NO IDENTIFICADO")));
 
   }
 
@@ -92,7 +70,7 @@ public class ProductServiceImpl extends CrudServiceImpl<Product, String>
 
           if (list.size() > 0) {
 
-            return Mono.error(new RuntimeException(msgIfExists));
+            return Mono.error(new RuntimeException("PRODUCTO YA EXISTE"));
 
           }
 
@@ -102,7 +80,7 @@ public class ProductServiceImpl extends CrudServiceImpl<Product, String>
                 return createdObject;
 
               })
-              .switchIfEmpty(Mono.error(new RuntimeException(msgNotFoundCreate)));
+              .switchIfEmpty(Mono.error(new RuntimeException("PRODUCTO NO SE PUDO CREAR")));
 
         });
 
@@ -150,7 +128,7 @@ public class ProductServiceImpl extends CrudServiceImpl<Product, String>
           return objectUpdated;
 
         })
-        .switchIfEmpty(Mono.error(new RuntimeException(msgNotFoundUpdate)));
+        .switchIfEmpty(Mono.error(new RuntimeException("PRODUCTO NO IDENTIFICADO PARA ACTUALIZAR")));
 
   }
 
@@ -162,8 +140,8 @@ public class ProductServiceImpl extends CrudServiceImpl<Product, String>
 
     return productDatabase
         .flatMap(objectDelete -> service.delete(objectDelete.getId())
-            .then(Mono.just(Response.builder().data(msgProductDelete).build())))
-        .switchIfEmpty(Mono.error(new RuntimeException(msgNotFoundDelete)));
+            .then(Mono.just(Response.builder().data("CLIENTE ELIMINADO").build())))
+        .switchIfEmpty(Mono.error(new RuntimeException("CLIENTE NO IDENTIFICADO PARA ELIMINAR")));
 
   }
 

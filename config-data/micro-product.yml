@@ -13,17 +13,6 @@ eureka:
   client:
     serviceUrl:
       defaultZone: http://localhost:8099/eureka/
-            
-msg:
-  error:
-    registro:
-      notfound.all: PRODUCTOS NO ENCONTRADOS
-      notfound: PRODUCTO NO IDENTIFICADO
-      notfound.create: PRODUCTO NO SE PUDO CREAR
-      if.exists: PRODUCTO YA EXISTE
-      notfound.update: PRODUCTO NO IDENTIFICADO PARA ACTUALIZAR
-      notfound.delete: CLIENTE NO IDENTIFICADO PARA ELIMINAR
-      product.delete: CLIENTE ELIMINADO
 
 resilience4j:
   circuitbreaker:

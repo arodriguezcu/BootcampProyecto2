@@ -14,16 +14,6 @@ eureka:
     serviceUrl:
       defaultZone: http://localhost:8099/eureka/
 
-msg:
-  error:
-    registro:
-      notfound.all: TRANSACCIONES NO IDENTIFICADAS
-      positive: MONTO DEBE SER POSITIVO
-      exceed: MONTO EXCEDE EL SALDO DISPONIBLE
-      accountini.exists: NUMERO DE CUENTA INICIAL NO EXISTE
-      accountfin.exists: NUMERO DE CUENTA FINAL NO EXISTE
-      card.exists: NUMERO DE TARJETA NO EXISTE
-
 resilience4j:
   circuitbreaker:
     configs:

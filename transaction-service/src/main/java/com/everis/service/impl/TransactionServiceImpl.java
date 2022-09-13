@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -25,13 +24,7 @@ public class TransactionServiceImpl extends CrudServiceImpl<Transaction, String>
     implements InterfaceTransactionService {
 
   static final String CIRCUIT = "transactionServiceCircuitBreaker";
-  
-  @Value("${msg.error.registro.notfound.all}")
-  private String msgNotFoundAll;
-  
-  @Value("${msg.error.registro.card.exists}")
-  private String msgCardNotExists;
-  
+
   @Autowired
   private InterfaceTransactionRepository repository;
 
@@ -53,7 +46,7 @@ public class TransactionServiceImpl extends CrudServiceImpl<Transaction, String>
   public Mono<List<Transaction>> findAllTransaction() { 
     
     Flux<Transaction> transactionDatabase = service.findAll()
-        .switchIfEmpty(Mono.error(new RuntimeException(msgNotFoundAll)));
+        .switchIfEmpty(Mono.error(new RuntimeException("TRANSACCIONES NO IDENTIFICADAS")));
     
     return transactionDatabase.collectList().flatMap(Mono::just);
     
@@ -65,11 +58,11 @@ public class TransactionServiceImpl extends CrudServiceImpl<Transaction, String>
     
     Flux<Account> accountDatabase = accountService.findAll()
         .filter(account -> account.getPurchase().getCardNumber().equals(cardNumber))
-        .switchIfEmpty(Mono.error(new RuntimeException(msgCardNotExists)));
+        .switchIfEmpty(Mono.error(new RuntimeException("NUMERO DE TARJETA NO EXISTE")));
     
     Flux<Transaction> transactionDatabase = service.findAll()
         .filter(list -> list.getPurchase().getCardNumber().equals(cardNumber))
-        .switchIfEmpty(Mono.error(new RuntimeException(msgNotFoundAll)));
+        .switchIfEmpty(Mono.error(new RuntimeException("TRANSACCIONES NO IDENTIFICADAS")));
 
     return accountDatabase.collectList()
         .flatMap(p -> transactionDatabase.collectList().flatMap(Mono::just));
@@ -82,12 +75,12 @@ public class TransactionServiceImpl extends CrudServiceImpl<Transaction, String>
     
     Flux<Account> accountDatabase = accountService.findAll()
         .filter(account -> account.getPurchase().getCardNumber().equals(cardNumber))
-        .switchIfEmpty(Mono.error(new RuntimeException(msgCardNotExists)));
+        .switchIfEmpty(Mono.error(new RuntimeException("NUMERO DE TARJETA NO EXISTE")));
     
     Flux<Transaction> transactionDatabase = service.findAll()
         .filter(list -> list.getPurchase().getCardNumber().equals(cardNumber))
         .takeLast(10)
-        .switchIfEmpty(Mono.error(new RuntimeException(msgNotFoundAll)));
+        .switchIfEmpty(Mono.error(new RuntimeException("TRANSACCIONES NO IDENTIFICADAS")));
 
     return accountDatabase.collectList()
         .flatMap(p -> transactionDatabase.collectList().flatMap(Mono::just));
@@ -100,12 +93,12 @@ public class TransactionServiceImpl extends CrudServiceImpl<Transaction, String>
     
     Flux<Account> accountDatabase = accountService.findAll()
         .filter(account -> account.getPurchase().getCardNumber().equals(cardNumber))
-        .switchIfEmpty(Mono.error(new RuntimeException(msgCardNotExists)));
+        .switchIfEmpty(Mono.error(new RuntimeException("NUMERO DE TARJETA NO EXISTE")));
     
     Flux<Transaction> transactionDatabase = service.findAll()
         .filter(list -> list.getPurchase().getCardNumber().equals(cardNumber))
         .filter(list -> list.getCommission() > 0)
-        .switchIfEmpty(Mono.error(new RuntimeException(msgNotFoundAll)));
+        .switchIfEmpty(Mono.error(new RuntimeException("TRANSACCIONES NO IDENTIFICADAS")));
 
     return accountDatabase.collectList()
         .flatMap(p -> transactionDatabase.collectList().flatMap(Mono::just));

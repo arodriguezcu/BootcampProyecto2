@@ -3,7 +3,7 @@ server:
   
 spring:
   application:
-    name: micro-product
+    name: product-service
   data:
     mongodb:
       database: db_product

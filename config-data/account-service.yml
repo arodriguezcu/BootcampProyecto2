@@ -3,7 +3,7 @@ server:
 
 spring:
   application:
-    name: micro-account
+    name: account-service
   data:
     mongodb:
       database: db_account

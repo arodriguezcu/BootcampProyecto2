@@ -6,5 +6,4 @@ spring:
       server: 
         git: 
           default-label: main
-          searchPaths: config-data
-          uri: "https://github.com/CarPalacios/BootcampProyecto2.git"
+          uri: "https://github.com/CarPalacios/BootcampProyecto2/config-data.git"

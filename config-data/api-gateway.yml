@@ -6,60 +6,34 @@ eureka:
     service-url:
       defaultZone: http://localhost:8761/eureka
  
-spring:
-  application:
-    name: api-gateway
-  cloud:
-    gateway:
-      discovery:
-        locator:
-          enabled: true
-      routes:
-      - id: client-service
-        uri: http://localhost:8090
-        predicates:
-        - Path=/clients/**
-        filters:
-        - RewritePath=/clients/(?<x>.*), /$\{x}
-        
-      - id: product-service
-        uri: http://localhost:8091
-        predicates:
-        - Path=/products/**
-        filters:
-        - RewritePath=/products/(?<x>.*), /$\{x}
-        
-      - id: purchase-service
-        uri: http://localhost:8092
-        predicates:
-        - Path=/purchases/**
-        filters:
-        - RewritePath=/purchases/(?<x>.*), /$\{x}
-        
-      - id: transaction-service
-        uri: http://localhost:8093
-        predicates:
-        - Path=/transactions/**
-        filters:
-        - RewritePath=/transactions/(?<x>.*), /$\{x}
-        
-      - id: account-service
-        uri: http://localhost:8094
-        predicates:
-        - Path=/accounts/**
-        filters:
-        - RewritePath=/accounts/(?<x>.*), /$\{x}
-        
-      - id: withdrawal-service
-        uri: http://localhost:8095
-        predicates:
-        - Path=/withdrawals/**
-        filters:
-        - RewritePath=/withdrawals/(?<x>.*), /$\{x}
-        
-      - id: deposit-service
-        uri: http://localhost:8096
-        predicates:
-        - Path=/deposits/**
-        filters:
-        - RewritePath=/deposits/(?<x>.*), /$\{x}
+#routers
+zuul:
+  routes:
+    customer:
+      path: /api/client-service/**
+      service-id: client-service
+      url: http://localhost:8090/
+    product:
+      path: /api/product-service/**
+      service-id: product-service
+      url: http://localhost:8091/
+    purchase:
+      path: /api/purchase-service/**
+      service-id: purchase-service
+      url: http://localhost:8092/
+    transaction:
+      path: /api/transaction-service/**
+      service-id: transaction-service
+      url: http://localhost:8093/
+    account:
+      path: /api/account-service/**
+      service-id: account-service
+      url: http://localhost:8094/
+    withdrawal:
+      path: /api/withdrawal-service/**
+      service-id: withdrawal-service
+      url: http://localhost:8095/
+    deposit:
+      path: /api/deposit-service/**
+      service-id: deposit-service
+      url: http://localhost:8096/

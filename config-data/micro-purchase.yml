@@ -7,17 +7,12 @@ spring:
   data:
     mongodb:
       database: db_purchase
-        uri: mongodb://${server.hostname}:12500/${spring.data.mongodb.database}
+        uri: mongodb://localhost:27017/purchase
 
 eureka:
   client:
-    service-url:
-      defaultZone: http://${eureka.instance.hostname}:80/eureka/
-    register-with-eureka: true
-    fetch-registry: true
-  instance:
-    prefer-ip-address: true
-    hostname: az-eureka-server.azurewebsites.net
+    serviceUrl:
+      defaultZone: http://localhost:8099/eureka/
             
 msg:
   error:

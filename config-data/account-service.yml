@@ -7,7 +7,7 @@ spring:
   data:
     mongodb:
       database: db_account
-        uri: mongodb://localhost:27017/account
+        uri: localhost:27017/account
       
 eureka:
   client:
